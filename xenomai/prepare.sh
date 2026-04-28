@@ -152,9 +152,9 @@ install_docker() {
     sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
     sudo update-alternatives --set iptables /usr/sbin/iptables-legacy
     sudo update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+    sudo usermod -aG docker $USER
     sudo systemctl start docker
     sudo systemctl enable docker
-    sudo usermod -aG docker $USER
     sudo docker run hello-world
 }
 
