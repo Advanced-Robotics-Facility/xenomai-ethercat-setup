@@ -196,7 +196,7 @@ for CH in ${CHOICES}; do
             kernel_intel_dovetail
             kernel_build
             ;;
-        5)  install docker
+        5)  install_docker
             ;;
         *)
             ;;
