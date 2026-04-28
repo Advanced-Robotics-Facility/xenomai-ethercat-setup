@@ -1,0 +1,54 @@
+# docker build -f Dockerfile.xenomai -t xenomai:latest .
+FROM ubuntu:24.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update -y \
+    && apt-get install -y --no-install-recommends \
+        tzdata \
+        build-essential \
+        cmake \
+        pkg-config \
+        wget \
+        ca-certificates \
+        git \
+        autoconf \
+        automake \
+        autotools-dev \
+        libtool \
+        m4 \
+        gettext \
+        libprotobuf-dev \
+        protobuf-compiler \
+        libyaml-cpp-dev \
+        libboost-all-dev \
+        libeigen3-dev \
+        pybind11-dev \
+        libcap2-bin \
+        libmsgpack-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV TZ=Europe/Rome
+
+ARG XN_VER=3.3.x
+RUN git clone --branch stable/v${XN_VER} --depth 1 \
+    https://source.denx.de/Xenomai/xenomai.git /tmp/xenomai-${XN_VER} \
+    && cd /tmp/xenomai-${XN_VER} \
+    && ./scripts/bootstrap \
+    && ./configure --enable-pshared --enable-tls --enable-dlopen-libs \
+                   --enable-async-cancel --enable-smp \
+    && make -j$(nproc) \
+    && make install \
+    && rm -rf /tmp/xenomai-${XN_VER}
+
+# CMake integration
+RUN git clone --depth 1 https://github.com/nolange/cmake_xenomai.git /tmp/cmake_xenomai \
+    && mkdir -p /usr/xenomai/lib/cmake/xenomai \
+    && cd /tmp/cmake_xenomai \
+    && ./config/install_cmakeconfig.sh -- /usr/xenomai/lib/cmake/xenomai \
+    && rm -rf /tmp/cmake_xenomai
+
+RUN echo '/usr/xenomai/lib' > /etc/ld.so.conf.d/xenomai.conf && ldconfig
+
+ENV PATH="/usr/xenomai/bin:${PATH}"

@@ -1,0 +1,131 @@
+# DOCKER_BUILDKIT=1 docker build --ssh default -f docker/Dockerfile.ethercat -t ecat-dev:latest .
+# docker run --rm -it --name ecat-container --cap-add=SYS_NICE ecat-dev:latest
+FROM xenomai:latest
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Versions
+ENV SOEM_VERSION=xeno3
+ENV MATLOGGER2_VERSION=master
+ENV CPPZMQ_VERSION=master
+ENV ECAT_MASTER_ADVR_VERSION=feature/cia402_rev
+ENV ECAT_CLIENT_ADVR_VERSION=feature/novanta
+
+# Workspace
+ENV WS_NAME=ecat_ws
+ENV WS_DIR=/root/${WS_NAME}
+ENV INSTALL_PREFIX=${WS_DIR}/install
+ENV SRC_DIR=${WS_DIR}/src
+ENV BUILD_DIR=${WS_DIR}/build
+
+# Build options
+ENV USE_XENO=ON
+ENV BUILD_GUI=OFF
+
+# Dependencies
+RUN apt update -y \
+    && apt install -y --no-install-recommends \
+        cmake-curses-gui \
+        net-tools \
+        openssh-server \
+        sshpass \
+        libgtest-dev \
+        libyaml-cpp-dev \
+        libfmt-dev \
+        libzmq3-dev \
+        protobuf-compiler \
+        libmsgpack-dev \
+        libboost-system-dev \
+        libeigen3-dev \
+        libmatio-dev \
+        python3-pip \
+        python3-yaml \
+        qt6-tools-dev \
+        qt6-declarative-dev \
+        libqt6charts6-dev \
+        uuid-dev \
+        libtiff-dev \
+        qttools5-dev \
+        libprotobuf-dev \
+        vim \
+        nano \
+    && apt clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Workspace setup
+WORKDIR /root
+COPY create_ws.sh /root
+RUN chmod +x /root/create_ws.sh \
+    && /root/create_ws.sh ${WS_NAME} \
+    && rm /root/create_ws.sh
+
+# Clone sources
+WORKDIR ${SRC_DIR}
+RUN git clone -b ${SOEM_VERSION} https://github.com/alessiomargan/SOEM.git \
+    && git clone -b ${CPPZMQ_VERSION} https://github.com/zeromq/cppzmq.git \
+    && git clone -b ${MATLOGGER2_VERSION} https://github.com/ADVRHumanoids/MatLogger2.git
+
+# SSH keys for private repos
+RUN mkdir -p /root/.ssh && ssh-keyscan github.com >> /root/.ssh/known_hosts
+# Use --mount=type=ssh for private repositories
+# docker build --ssh default=~/.ssh/id_rsa .
+RUN --mount=type=ssh \
+    git clone -b ${ECAT_MASTER_ADVR_VERSION} git@github.com:Advanced-Robotics-Facility/ecat-master-advr.git \
+    && git clone -b ${ECAT_CLIENT_ADVR_VERSION} git@github.com:Advanced-Robotics-Facility/ecat-client-advr.git
+
+# Build SOEM
+WORKDIR ${BUILD_DIR}
+RUN mkdir -p SOEM && cd SOEM \
+    && cmake ${SRC_DIR}/SOEM -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
+        -DCMAKE_USE_XENOMAI=${USE_XENO} \
+    && make -j$(nproc) && make install
+
+# Build MatLogger2
+RUN mkdir -p MatLogger2 && cd MatLogger2 \
+    && cmake ${SRC_DIR}/MatLogger2 \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
+        -DCOMPILE_PY_BINDINGS=OFF \
+        -DGEN_DEB=OFF \
+    && make -j$(nproc) && make install
+
+# Build cppzmq
+RUN mkdir -p cppzmq && cd cppzmq \
+    && cmake ${SRC_DIR}/cppzmq \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
+        -DBUILD_TESTING=OFF \
+        -DCPPZMQ_BUILD_TESTS=OFF \
+    && make -j$(nproc) && make install
+
+# Workaround for ecat-master-advr set_cap.sh
+RUN printf '#!/bin/sh\nexit 0\n' > ${SRC_DIR}/ecat-master-advr/scripts/set_cap.sh \
+    && chmod +x ${SRC_DIR}/ecat-master-advr/scripts/set_cap.sh
+
+# Build ecat-master-advr
+RUN mkdir -p ecat-master-advr && cd ecat-master-advr \
+    && cmake ${SRC_DIR}/ecat-master-advr \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
+        -DCMAKE_PREFIX_PATH=${INSTALL_PREFIX} \
+        -DBUILD_UDP_SRV=ON \
+        -DENABLE_XENO=${USE_XENO} \
+        -DCMAKE_CXX_FLAGS="-I${INSTALL_PREFIX}/include" \
+    && make -j$(nproc) && make install
+
+# Build ecat-client-advr
+RUN mkdir -p ecat-client-advr && cd ecat-client-advr \
+    && cmake ${SRC_DIR}/ecat-client-advr \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
+        -DCOMPILE_GUI=${BUILD_GUI} \
+        -DENABLE_XENO=${USE_XENO} \
+    && make -j$(nproc) && make install
+
+# Environment variables
+ENV EC_CFG=${SRC_DIR}/ecat-client-advr/config/ec_cfg.yaml
+RUN echo "source ${WS_DIR}/setup.bash" >> /root/.bashrc \
+    && echo "export EC_CFG=${EC_CFG}" >> /root/.bashrc
+
+WORKDIR /root
+CMD ["/bin/bash"]
