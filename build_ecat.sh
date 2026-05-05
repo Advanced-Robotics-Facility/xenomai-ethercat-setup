@@ -2,10 +2,10 @@
 set -e
 
 # Branch versions
-SOEM_VERSION=xeno3
+SOEM_VERSION=xeno_port
 MATLOGGER2_VERSION=master
 CPPZMQ_VERSION=master
-ECAT_MASTER_ADVR_VERSION=feature/cia402_rev
+ECAT_MASTER_ADVR_VERSION=soem_v2.x
 ECAT_CLIENT_ADVR_VERSION=feature/novanta
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

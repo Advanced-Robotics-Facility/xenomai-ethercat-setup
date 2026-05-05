@@ -281,7 +281,18 @@ git clone https://github.com/Advanced-Robotics-Facility/xenomai-ethercat-setup.g
 ./xenomai-ethercat-setup/xenomai/prepare.sh
 ```
 
-To build and run everything:
+To build and run everything, you have two paths:
+
+### Docker Compose
+
+```bash
+# Xenomai + EtherCAT Stack
+cd xenomai-ethercat-setup/docker
+DOCKER_BUILDKIT=1 docker compose up --build
+docker exec -it ecat-container /bin/bash
+```
+
+### Manual Procedure
 
 ```bash
 # Xenomai Docker Image

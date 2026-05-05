@@ -1,0 +1,25 @@
+# DOCKER_BUILDKIT=1 docker compose up --build
+# docker exec -it ecat-container /bin/bash
+services:
+  ecat:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.ethercat
+      ssh:
+        default: $SSH_AUTH_SOCK   
+    container_name: ecat-container
+    privileged: true
+    cap_add:
+      - SYS_NICE  
+    environment:
+      - DEBIAN_FRONTEND=noninteractive
+      - USE_XENO=ON
+      - BUILD_GUI=OFF
+    tty: true
+    stdin_open: true 
+    networks:
+      - ecat-net
+  
+networks:
+  ecat-net:
+    driver: bridge
