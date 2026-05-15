@@ -5,6 +5,8 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile.ethercat
+      args:
+        - DDS_IMPL=cyclonedds
       ssh:
         default: $SSH_AUTH_SOCK   
     container_name: ecat-container

@@ -6,9 +6,21 @@
 # DOCKER_BUILDKIT=1 docker build --build-arg DDS_IMPL=fastdds --ssh default -f docker/Dockerfile.nrt_ethercat -t ecat-dev:latest .
 # docker run --rm -it --name nrt-ecat-container --network host --privileged --cap-add=SYS_NICE ecat-dev:latest
 
-FROM xenomai:latest
+FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive
+
+# Install basic packages
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        cmake \
+        pkg-config \
+        wget \
+        ca-certificates \
+        git \
+        curl \
+    && rm -rf /var/lib/apt/lists/*
 
 # Versions
 ENV SOEM_VERSION=xeno3
@@ -33,7 +45,7 @@ ENV SRC_DIR=${WS_DIR}/src
 ENV BUILD_DIR=${WS_DIR}/build
 
 # Build options
-ENV USE_XENO=ON
+ENV USE_XENO=OFF
 ENV BUILD_GUI=OFF
 
 ARG DDS_IMPL=cyclonedds

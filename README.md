@@ -288,6 +288,7 @@ To build and run everything, you have two paths:
 ```bash
 # Xenomai + EtherCAT Stack
 cd xenomai-ethercat-setup/docker
+docker build -f Dockerfile.xenomai -t xenomai:latest .
 DOCKER_BUILDKIT=1 docker compose up --build
 docker exec -it ecat-container /bin/bash
 ```
