@@ -11,6 +11,7 @@ services:
         default: $SSH_AUTH_SOCK   
     container_name: ecat-container
     privileged: true
+    network_mode: "host"
     cap_add:
       - SYS_NICE  
     environment:
@@ -19,9 +20,3 @@ services:
       - BUILD_GUI=OFF
     tty: true
     stdin_open: true 
-    networks:
-      - ecat-net
-  
-networks:
-  ecat-net:
-    driver: bridge
