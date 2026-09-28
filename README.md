@@ -13,7 +13,8 @@ Xenomai provides real-time capabilities by adding a co-kernel to Linux.
 Steps:
 ```bash
 git clone https://github.com/Advanced-Robotics-Facility/xenomai-ethercat-setup.git
-./xenomai-ethercat-setup/xenomai/prepare.sh
+cd xenomai-ethercat-setup/xenomai
+./prepare.sh
 ```
 
 Configuration options:
