@@ -39,7 +39,7 @@ install_pkgs() {
     pkg-config usbutils wireless-tools protobuf-compiler libfmt-dev python3-pybind11 gnutls-bin \
     libboost-all-dev libzmq5 libyaml-cpp-dev libprotobuf-dev libeigen3-dev libspdlog-dev libmsgpack-dev libjsoncpp-dev libspnav-dev 
     sudo apt-file update
-    sudo chown -R $USER.$USER /usr/local/
+    sudo chown -R $USER:$USER /usr/local/
 
 }
 
