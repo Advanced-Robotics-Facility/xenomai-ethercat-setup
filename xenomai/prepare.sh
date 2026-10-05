@@ -68,7 +68,7 @@ setup_xeno() {
     TARGETDIR=/usr/xenomai/lib/cmake/xenomai
     sudo mkdir -p $TARGETDIR
     cd cmake_xenomai
-    sudo ./config/install_cmakeconfig.sh --version $XENOVER -- $TARGETDIR    
+    sudo ./config/install_cmakeconfig.sh --version $XN_VER -- $TARGETDIR    
     popd
  
     sudo groupadd -f xenomai
@@ -108,7 +108,7 @@ kernel_dovetail() {
     KDIR=$HOME/linux-$KVER-dovetail
     pushd $HOME
     if [ ! -d "${KDIR}" ]; then
-        git clone --branch v$KVER.y-dovetail --depth 1 https://source.denx.de/Xenomai/linux-dovetail.git $KDIR
+        git clone --branch v$KVER.y-dovetail --depth 1 https://gitlab.com/Xenomai/linux-dovetail.git $KDIR
     fi
     if [ ! -d "${XN_DIR}" ]; then
         setup_xeno
