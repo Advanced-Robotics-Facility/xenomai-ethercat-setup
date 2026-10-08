@@ -116,7 +116,7 @@ kernel_dovetail() {
     $XN_DIR/scripts/prepare-kernel.sh --linux=$KDIR --arch=x86
     popd
     # copy config
-    cp config-6.18.19-preempt_rt+xeno-3.3.3 $KDIR/.config
+    cp config-6.18.19-xeno-3.3.3 $KDIR/.config
 }
 
 kernel_intel_dovetail() {
