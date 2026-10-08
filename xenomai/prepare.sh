@@ -50,7 +50,7 @@ setup_xeno() {
     # get sources
     pushd $HOME   
     if [ ! -d xenomai-$XN_VER ]; then
-      git clone --branch stable/v$XN_VER --depth 1 https://gitlab.com/Xenomai/xenomai3/xenomai.git xenomai-$XN_VER
+      git clone --branch stable/v$XN_VER --depth 1 https://source.denx.de/Xenomai/xenomai.git xenomai-$XN_VER
     fi
     # compile and install xenomai
     cd xenomai-$XN_VER
@@ -104,11 +104,11 @@ kernel_build() {
 }
 
 kernel_dovetail() {
-    KVER=6.12
+    KVER=6.18
     KDIR=$HOME/linux-$KVER-dovetail
     pushd $HOME
     if [ ! -d "${KDIR}" ]; then
-        git clone --branch v$KVER.y-dovetail --depth 1 https://gitlab.com/Xenomai/linux-dovetail.git $KDIR
+        git clone --branch v$KVER.y-dovetail --depth 1 https://gitlab.com/xenomai/linux-dovetail.git $KDIR
     fi
     if [ ! -d "${XN_DIR}" ]; then
         setup_xeno
@@ -116,7 +116,7 @@ kernel_dovetail() {
     $XN_DIR/scripts/prepare-kernel.sh --linux=$KDIR --arch=x86
     popd
     # copy config
-    cp config-6.12.19-xeno-3.3.2 $KDIR/.config
+    cp config-6.18.19-preempt_rt+xeno-3.3.3 $KDIR/.config
 }
 
 kernel_intel_dovetail() {
