@@ -50,7 +50,7 @@ setup_xeno() {
     # get sources
     pushd $HOME   
     if [ ! -d xenomai-$XN_VER ]; then
-      git clone --branch stable/v$XN_VER --depth 1 https://source.denx.de/Xenomai/xenomai.git xenomai-$XN_VER
+      git clone --branch stable/v$XN_VER --depth 1 https://gitlab.com/Xenomai/xenomai3/xenomai.git xenomai-$XN_VER
     fi
     # compile and install xenomai
     cd xenomai-$XN_VER
